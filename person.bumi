@@ -1,0 +1,22 @@
+class Person {
+    int age;
+    int salary;
+    void setAge(int newAge) {
+        this.age = newAge;
+    }
+    void giveRaise(int amount) {
+        this.salary = this.salary + amount;
+        print(this.salary);
+    }
+}
+        
+void main() {
+    print('Starting C Tool Output...');
+    Person p = new Person();
+    p.age = 30;
+    p.salary = 50000;
+    p.setAge(31);
+    p.giveRaise(5000);
+    print('Done.');
+    return 0;
+};
