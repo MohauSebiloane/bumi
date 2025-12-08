@@ -3,6 +3,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <io.h> 
+#include <fcntl.h> 
 
 #define MAX_LINE 1024
 #define MAX_CLASSES 16
@@ -124,7 +126,6 @@ void parse_classes_pass(char* line_raw) {
     }
 }
 
-/* transform_this must be available before emit_print uses it */
 void transform_this(char* dst, const char* src) {
     dst[0] = '\0';
     const char* p = src;
@@ -144,7 +145,6 @@ void transform_this(char* dst, const char* src) {
     }
 }
 
-/* emit_print: if content is quoted string -> printf("..."); else -> printf("%d\n", expr); */
 void emit_print(FILE* out, char* content) {
     if (!content) return;
     char* t = trim(content);
@@ -155,16 +155,9 @@ void emit_print(FILE* out, char* content) {
         fprintf(out, "    printf(\"%.*s\\n\");\n", slen, start);
         return;
     }
-    /* not a string literal: treat as expression / variable
-       transform 'this.' -> 'self->' before emitting */
     char transformed[MAX_LINE];
     transform_this(transformed, t);
-    /* if transformed contains quotes (unlikely) fall back to string */
-    if (strchr(transformed, '"') || strchr(transformed, '\'')) {
-        fprintf(out, "    printf(\"%s\\n\");\n", transformed);
-    } else {
-        fprintf(out, "    printf(\"%%d\\n\", %s);\n", transformed);
-    }
+    fprintf(out, "    printf(\"%%d\\n\", %s);\n", transformed);
 }
 
 bool line_ends_with_semicolon(const char* s) {
@@ -274,11 +267,6 @@ void process_line(FILE* out, char* line_raw) {
         if (!line_ends_with_semicolon(transformed)) {
             fprintf(out, "    %s;\n", transformed);
         } else {
-            int len = strlen(transformed);
-            while (len > 1 && transformed[len-1] == ';' && transformed[len-2] == ';') {
-                transformed[len-1] = '\0';
-                len--;
-            }
             fprintf(out, "    %s\n", transformed);
         }
         return;
@@ -289,53 +277,78 @@ void process_line(FILE* out, char* line_raw) {
         return;
     }
 
-    char* new_kw = strstr(s, " = new ");
+    // Handle 'new' object creation
+    char* new_kw = strstr(s, "new ");
     if (new_kw) {
         char left[MAX_LINE];
         strncpy(left, s, new_kw - s);
         left[new_kw - s] = '\0';
         char type[MAX_TOKEN], var[MAX_TOKEN];
         if (sscanf(left, "%s %s", type, var) >= 1) {
-            char ctor[MAX_TOKEN] = "";
-            char* after = new_kw + 7;
-            int i = 0;
-            while (after[i] && after[i] != '(' && !isspace((unsigned char)after[i]) && i < MAX_TOKEN-1) {
-                ctor[i] = after[i];
-                i++;
-            }
-            ctor[i] = '\0';
-            fprintf(out, "    %s* %s = %s_new();\n", type, var, ctor[0] ? ctor : type);
+            // FIX: Always use pointer
+            fprintf(out, "%s* %s = %s_new();\n", type, var, type);
             if (var[0]) record_var(var, type);
             return;
         }
     }
 
+
+/*chat*/
     char* dot = strchr(s, '.');
-    char* openp = strchr(s, '(');
-    char* semi = strrchr(s, ';');
-    if (dot && openp && semi && !strchr(s, '=') ) {
+    char* eq = strchr(s, '=');
+    if (dot && eq && !strchr(s, '(')) {
         int dotpos = dot - s;
         char var[MAX_TOKEN];
         strncpy(var, s, dotpos);
         var[dotpos] = '\0';
+        char field[MAX_TOKEN];
+        int flen = eq - dot - 1;
+        strncpy(field, dot + 1, flen);
+        field[flen] = '\0';
+        trim(field);
+
+        char rhs[MAX_LINE];
+        strcpy(rhs, eq + 1);
+        char* endsemi = strrchr(rhs, ';');
+        if (endsemi) *endsemi = '\0';
+        trim(rhs);
+
+        fprintf(out, "    %s->%s = %s;\n", var, field, rhs);
+        return;
+    }
+/*chat*/
+
+
+    char* openp = strchr(s, '(');
+    char* semi = strrchr(s, ';');
+    if (dot && openp && semi) {
+        int dotpos = dot - s;
+        char var[MAX_TOKEN];
+        strncpy(var, s, dotpos);
+        var[dotpos] = '\0';
+
         char method_call[MAX_LINE];
         strcpy(method_call, dot + 1);
+
         char method[MAX_TOKEN];
         char args[MAX_LINE] = "";
-        char* p = strchr(method_call, '(');
-        if (!p) return;
-        int mlen = p - method_call;
+        char* pstart = strchr(method_call, '(');
+        if (!pstart) return;
+        int mlen = pstart - method_call;
         strncpy(method, method_call, mlen);
         method[mlen] = '\0';
-        char* argstart = p + 1;
+
+        char* argstart = pstart + 1;
         char* argclose = strchr(argstart, ')');
         if (argclose) {
             int alen = argclose - argstart;
             strncpy(args, argstart, alen);
             args[alen] = '\0';
         }
+
         const char* vt = lookup_var(var);
         const char* cls = vt ? vt : state.class_count > 0 ? state.classes[0].name : "Obj";
+
         if (strlen(args) == 0)
             fprintf(out, "    %s_%s(%s);\n", cls, method, var);
         else
@@ -343,39 +356,9 @@ void process_line(FILE* out, char* line_raw) {
         return;
     }
 
-    if (dot && strchr(s, '=') && !strchr(s, '(')) {
-        int dotpos = dot - s;
-        char var[MAX_TOKEN];
-        strncpy(var, s, dotpos);
-        var[dotpos] = '\0';
-        char* after = dot + 1;
-        char* eq = strchr(after, '=');
-        if (!eq) return;
-        int flen = eq - after;
-        char field[MAX_TOKEN];
-        strncpy(field, after, flen);
-        field[flen] = '\0';
-        trim(field);
-        char rhs[MAX_LINE];
-        strcpy(rhs, eq + 1);
-        char* endsemi = strrchr(rhs, ';');
-        if (endsemi) *endsemi = '\0';
-        trim(rhs);
-        fprintf(out, "    %s->%s = %s;\n", var, field, rhs);
-        return;
-    }
-
-    if (starts_with("print(", s)) {
-        char* content = strchr(s, '(') + 1;
-        char* end = strrchr(content, ')');
-        if (end) *end = '\0';
-        emit_print(out, content);
-        return;
-    }
 
     fprintf(out, "    %s\n", s);
 }
-
 
 char* load_raw_file(const char* filename) {
     FILE *fp = fopen(filename, "r");
@@ -387,49 +370,31 @@ char* load_raw_file(const char* filename) {
 
     char *buffer = malloc(size + 1);
     fread(buffer, 1, size, fp);
-    buffer[size] = '\0';
+    buffer[size] = '\0';    
     fclose(fp);
     return buffer;
 }
 
 char* load_bumi_source(const char *filename) {
     FILE *fp = fopen(filename, "r");
-    if (!fp) {
-        fprintf(stderr, "Error: Could not open %s\n", filename);
-        return NULL;
-    }
+    if (!fp) return NULL;
 
-    // determine file size
     fseek(fp, 0, SEEK_END);
     long size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
-    if (size < 0) {
-        fclose(fp);
-        return NULL;
-    }
-
-    // allocate generous space
     char *out = malloc(size * 2 + 2048);
-    if (!out) {
-        fclose(fp);
-        return NULL;
-    }
+    if (!out) return NULL;
 
     out[0] = '\0';
 
     char line[2048];
     while (fgets(line, sizeof(line), fp)) {
-        // strip newline
         size_t len = strlen(line);
-        if (len > 0 && line[len - 1] == '\n') {
-            line[len - 1] = '\0';
-        }
-
+        if (len > 0 && line[len - 1] == '\n') line[len - 1] = '\0';
         strcat(out, "\"");
-
         for (size_t i = 0; i < strlen(line); i++) {
-            if (line[i] == '"')        strcat(out, "\\\"");
+            if (line[i] == '"') strcat(out, "\\\"");
             else if (line[i] == '\\') strcat(out, "\\\\");
             else {
                 size_t cur = strlen(out);
@@ -437,9 +402,11 @@ char* load_bumi_source(const char *filename) {
                 out[cur+1] = '\0';
             }
         }
-
         strcat(out, "\\n\"\n");
     }
+    for (size_t i = 0; i < strlen(line); i++) {
+    if (line[i] == '\r') line[i] = '\0';
+}
 
     fclose(fp);
     return out;
@@ -447,8 +414,6 @@ char* load_bumi_source(const char *filename) {
 
 char* strip_bumi_extension(const char *filename) {
     const char *base = filename;
-
-    // Get pointer to last slash (Unix '/' or Windows '\')
     const char *slash = strrchr(filename, '/');
     const char *backslash = strrchr(filename, '\\');
 
@@ -460,39 +425,64 @@ char* strip_bumi_extension(const char *filename) {
         base = backslash + 1;
 
     size_t len = strlen(base);
-
-    // Check if filename ends with ".bumi"
     const char *ext = ".bumi";
     size_t ext_len = strlen(ext);
 
-    if (len >= ext_len && strcmp(base + len - ext_len, ext) == 0) {
-        len -= ext_len; // remove extension
-    }
+    if (len >= ext_len && strcmp(base + len - ext_len, ext) == 0) len -= ext_len;
 
-    // Allocate returned string
     char *out = malloc(len + 1);
     if (!out) return NULL;
 
     strncpy(out, base, len);
     out[len] = '\0';
-
     return out;
-}   
-    // CHAT HANDLED THE TRUNCATION METHOD
+} //CHAT did this
+
+
+
+
+
+
+// void remove_last_char(const char* filename) {
+//     FILE* f = fopen(filename, "rb+"); // binary mode to avoid CRLF issues
+//     if (!f) return;
+
+//     // Go to end
+//     if (fseek(f, -1, SEEK_END) != 0) { // move 1 byte before end
+//         fclose(f);
+//         return;
+//     }
+
+//     int last = fgetc(f); // read last byte
+//     if (last == EOF) {
+//         fclose(f);
+//         return;
+//     }
+
+//     long new_size = ftell(f); // current position is new size
+//     if (_chsize_s(_fileno(f), new_size) != 0) {
+//         perror("Failed to truncate file");
+//     }
+
+//     fclose(f);
+// }
+
+
+
+
 
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("Usage: %s <filename.bumi>\n", argv[0]);
-        return 1;
-    }
+
     char* bumi_source = load_raw_file(argv[1]);
-    char* bumi_string_literal = load_bumi_source(argv[1]); 
-    const char* name = strip_bumi_extension(argv[1]);
-    strncat(name, ".c", sizeof(name) - strlen(name) - 1);
-    
-    FILE* out = fopen(name, "w");
-    
+    if (!bumi_source) return 1;
+
+    char* name = strip_bumi_extension(argv[1]);
+    char* out_filename = malloc(strlen(name) + 3);
+    strcpy(out_filename, name);
+    strcat(out_filename, ".c");
+
+    FILE* out = fopen(out_filename, "w");
     if (!out) return 1;
 
     char* src_copy = strdup(bumi_source);
@@ -504,9 +494,7 @@ int main(int argc, char *argv[]) {
     free(src_copy);
 
     fprintf(out, "// --- GENERATED C CODE ---\n");
-    fprintf(out, "#include <stdio.h>\n");
-    fprintf(out, "#include <stdlib.h>\n");
-    fprintf(out, "#include <string.h>\n\n");
+    fprintf(out, "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n");
 
     for (int i = 0; i < state.class_count; i++) {
         ClassDef* c = &state.classes[i];
@@ -542,8 +530,14 @@ int main(int argc, char *argv[]) {
         process_line(out, tmp);
         line = strtok(NULL, "\n");
     }
-    free(src_copy);
 
+
+
+    free(src_copy);
     fclose(out);
+    free(out_filename);
+    free(name);
+    free(bumi_source);
+
     return 0;
 }
