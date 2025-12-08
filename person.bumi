@@ -16,8 +16,9 @@ void main() {
     p.age = 30;
     p.salary = 50000;
     p.setAge(31);
-    for (int i = 0; i < 3; i++);
+    for (int i = 0; i < 3; i++){
     p.giveRaise(5000);
+    }
     print('Done.');
     return 0;
 }

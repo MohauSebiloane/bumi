@@ -3,12 +3,17 @@
 #include <string.h>
 
 int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s <path_to_bumi_file>\n", argv[0]);
+        return 1;
+    }
 
     char *bumiFile = argv[1];
     char translatorCommand[512];
     snprintf(translatorCommand, sizeof(translatorCommand),
              "translator.exe \"%s\"", bumiFile);
 
+    printf("Running translator: %s\n", translatorCommand);
     if (system(translatorCommand) != 0) return 1;
 
     char cFile[512];
@@ -26,10 +31,15 @@ int main(int argc, char *argv[]) {
     char compileCommand[1024];
     snprintf(compileCommand, sizeof(compileCommand),
              "gcc \"%s\" -o \"%s\"", cFile, exeFile);
+
+    printf("Compiling C file: %s\n", compileCommand);
     if (system(compileCommand) != 0) return 1;
 
     char runCommand[512];
     snprintf(runCommand, sizeof(runCommand), "\"%s\"", exeFile);
+    printf("Running executable: %s\n", runCommand);
+
+    printf("================================================= \n\n");
     if (system(runCommand) != 0) return 1;
 
     return 0;
