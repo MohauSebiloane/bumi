@@ -365,7 +365,7 @@ static const flex_int16_t yy_accept[103] =
         0,    0,   45,   43,    2,    1,   31,   43,   33,   43,
        37,   38,   32,   35,   34,   33,   19,   36,   28,   30,
        29,   18,   41,   42,   18,   18,   18,   18,   18,   18,
-       18,   18,   18,   18,   18,   18,   39,   18,   40,    2,
+       18,   18,   18,   18,   18,   18,   39,   43,   40,    2,
        23,    0,   21,    0,   26,    3,   20,   19,   24,   22,
        25,   18,   18,   18,   18,   18,   18,   10,   18,   18,
        18,   18,   18,   18,   18,   18,   27,    3,   20,   18,
@@ -438,7 +438,7 @@ static const flex_int16_t yy_def[106] =
       102,    1,  102,  102,  102,  102,  102,  103,  102,  102,
       102,  102,  102,  102,  102,  102,  102,  102,  102,  102,
       102,  104,  102,  102,  104,  104,  104,  104,  104,  104,
-      104,  104,  104,  104,  104,  104,  102,  104,  102,  102,
+      104,  104,  104,  104,  104,  104,  102,  102,  102,  102,
       102,  103,  102,  103,  102,  105,  102,  102,  102,  102,
       102,  104,  104,  104,  104,  104,  104,  104,  104,  104,
       104,  104,  104,  104,  104,  104,  102,  105,  102,  104,
@@ -507,9 +507,10 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "./bumi/flexBison/expr.l"
-#line 2 "./bumi/flexBison/expr.l"
+#line 1 "expr.l"
+#line 2 "expr.l"
     #include <stdio.h>
+    #include <string.h>
     #include "expr.tab.h"
 
     #define YY_SKIP_YYWRAP
@@ -520,8 +521,8 @@ char *yytext;
     void printToken(const char* name, const char* text) {
         printf("%4d  %-15s  %s\n", lineN, name, text); // right aligned 4 char int, left aligned 15 char string, another string
     }
-#line 523 "lex.yy.c"
 #line 524 "lex.yy.c"
+#line 525 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -738,10 +739,10 @@ YY_DECL
 		}
 
 	{
-#line 22 "./bumi/flexBison/expr.l"
+#line 23 "expr.l"
 
 
-#line 744 "lex.yy.c"
+#line 745 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -801,226 +802,238 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 24 "./bumi/flexBison/expr.l"
+#line 25 "expr.l"
 { lineN++; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 25 "./bumi/flexBison/expr.l"
-{ /* skip whitespace, but not endls yet... */ }
+#line 26 "expr.l"
+; // skip whitespace, but not endls yet...
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 26 "./bumi/flexBison/expr.l"
+#line 28 "expr.l"
 { /* skip comments */ }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 28 "./bumi/flexBison/expr.l"
-{ printToken("CLASSTK", yytext); }
+#line 30 "expr.l"
+{ return(CLASSTK);  } // printToken("CLASSTK", yytext);
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 29 "./bumi/flexBison/expr.l"
-{ printToken("VOIDTK", yytext); }
+#line 31 "expr.l"
+{ return(VOIDTK);   } // printToken("VOIDTK", yytext); 
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 30 "./bumi/flexBison/expr.l"
-{ printToken("INTTK", yytext); }
+#line 32 "expr.l"
+{ return(INTTK);    } // printToken("INTTK", yytext);  
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 31 "./bumi/flexBison/expr.l"
-{ printToken("FLOATTK", yytext); }
+#line 33 "expr.l"
+{ return(FLOATTK);  } // printToken("FLOATTK", yytext);
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 32 "./bumi/flexBison/expr.l"
-{ printToken("BOOLTK", yytext); }
+#line 34 "expr.l"
+{ return(BOOLTK);   } // printToken("BOOLTK", yytext); 
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 33 "./bumi/flexBison/expr.l"
-{ printToken("STRINGTK", yytext); }
+#line 35 "expr.l"
+{ return(STRINGTK); } // printToken("STRINGTK", yytext)
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 35 "./bumi/flexBison/expr.l"
-{ printToken("IFTK", yytext); }
+#line 37 "expr.l"
+{ return(IFTK);     } // printToken("IFTK", yytext);   
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 36 "./bumi/flexBison/expr.l"
-{ printToken("ELSETK", yytext); }
+#line 38 "expr.l"
+{ return(ELSETK);   } // printToken("ELSETK", yytext); 
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 37 "./bumi/flexBison/expr.l"
-{ printToken("FORTK", yytext); }
+#line 39 "expr.l"
+{ return(FORTK);    } // printToken("FORTK", yytext);  
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 38 "./bumi/flexBison/expr.l"
-{ printToken("WHILETK", yytext); }
+#line 40 "expr.l"
+{ return(WHILETK);  } // printToken("WHILETK", yytext);
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 39 "./bumi/flexBison/expr.l"
-{ printToken("RETURNTK", yytext); }
+#line 41 "expr.l"
+{ return(RETURNTK); } // printToken("RETURNTK", yytext)
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 41 "./bumi/flexBison/expr.l"
-{ printToken("NEWTK", yytext); }
+#line 43 "expr.l"
+{ return(NEWTK);    } // printToken("NEWTK", yytext);  
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 42 "./bumi/flexBison/expr.l"
-{ printToken("THISTK", yytext); }
+#line 44 "expr.l"
+{ return(THISTK);   } // printToken("THISTK", yytext); 
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 43 "./bumi/flexBison/expr.l"
-{ printToken("PRINTTK", yytext); }
+#line 45 "expr.l"
+{ return(PRINTTK);  } // printToken("PRINTTK", yytext);
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 45 "./bumi/flexBison/expr.l"
-{ printToken("IDENTIFIER", yytext); }
+#line 47 "expr.l"
+{
+    yylval.val = (char*) strdup(yytext);
+    return(IDENTIFIER);
+}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 47 "./bumi/flexBison/expr.l"
-{ printToken("INTTK", yytext); }
+#line 51 "expr.l"
+{
+    yylval.val = (char*) strdup(yytext);
+    return(INTTK);
+}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 48 "./bumi/flexBison/expr.l"
-{ printToken("FLOATTK", yytext); }
+#line 55 "expr.l"
+{
+    yylval.val = (char*) strdup(yytext);
+    return(FLOATTK);
+}
 	YY_BREAK
 case 21:
 /* rule 21 can match eol */
 YY_RULE_SETUP
-#line 49 "./bumi/flexBison/expr.l"
-{ printToken("STRINGTK", yytext); }
+#line 59 "expr.l"
+{
+    yylval.val = (char*) strdup(yytext);
+    return(STRINGTK);
+}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 51 "./bumi/flexBison/expr.l"
-{ printToken("EQOP", yytext); }
+#line 64 "expr.l"
+{ return(EQOP);     } // printToken("EQOP", yytext);    
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 52 "./bumi/flexBison/expr.l"
-{ printToken("NEQOP", yytext); }
+#line 65 "expr.l"
+{ return(NEQOP);    } // printToken("NEQOP", yytext);   
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 53 "./bumi/flexBison/expr.l"
-{ printToken("LEOP", yytext); }
+#line 66 "expr.l"
+{ return(LEOP);     } // printToken("LEOP", yytext);    
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 54 "./bumi/flexBison/expr.l"
-{ printToken("GEOP", yytext); }
+#line 67 "expr.l"
+{ return(GEOP);     } // printToken("GEOP", yytext);    
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 55 "./bumi/flexBison/expr.l"
-{ printToken("ANDOP", yytext); }
+#line 68 "expr.l"
+{ return(ANDOP);    } // printToken("ANDOP", yytext);   
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 56 "./bumi/flexBison/expr.l"
-{ printToken("OROP", yytext); }
+#line 69 "expr.l"
+{ return(OROP);     } // printToken("OROP", yytext);    
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 58 "./bumi/flexBison/expr.l"
-{ printToken("LTOP", yytext); }
+#line 71 "expr.l"
+{ return(LTOP);     } // printToken("LTOP", yytext);    
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 59 "./bumi/flexBison/expr.l"
-{ printToken("GTOP", yytext); }
+#line 72 "expr.l"
+{ return(GTOP);     } // printToken("GTOP", yytext);    
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 60 "./bumi/flexBison/expr.l"
-{ printToken("ASSIGNOP", yytext); }
+#line 73 "expr.l"
+{ return(ASSIGNOP); } // printToken("ASSIGNOP", yytext);
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 61 "./bumi/flexBison/expr.l"
-{ printToken("NOTOP", yytext); }
+#line 74 "expr.l"
+{ return(NOTOP);    } // printToken("NOTOP", yytext);   
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 63 "./bumi/flexBison/expr.l"
-{ printToken("ADDOP", yytext); }
+#line 76 "expr.l"
+{ return(ADDOP);    } // printToken("ADDOP", yytext);   
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 64 "./bumi/flexBison/expr.l"
-{ printToken("MULTOP", yytext); }
+#line 77 "expr.l"
+{ return(MULTOP);   } // printToken("MULTOP", yytext);  
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 66 "./bumi/flexBison/expr.l"
-{ printToken("DOT", yytext); }
+#line 79 "expr.l"
+{ return(DOT);      } // printToken("DOT", yytext);     
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 67 "./bumi/flexBison/expr.l"
-{ printToken("COMMA", yytext); }
+#line 80 "expr.l"
+{ return(COMMA);    } // printToken("COMMA", yytext);   
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 68 "./bumi/flexBison/expr.l"
-{ printToken("SEMICOL", yytext); }
+#line 81 "expr.l"
+{ return(SEMICOL);  } // printToken("SEMICOL", yytext); 
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 69 "./bumi/flexBison/expr.l"
-{ printToken("LPAREN", yytext); }
+#line 82 "expr.l"
+{ return(LPAREN);   } // printToken("LPAREN", yytext);  
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 70 "./bumi/flexBison/expr.l"
-{ printToken("RPAREN", yytext); }
+#line 83 "expr.l"
+{ return(RPAREN);   } // printToken("RPAREN", yytext);  
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 71 "./bumi/flexBison/expr.l"
-{ printToken("LBRACE", yytext); }
+#line 84 "expr.l"
+{ return(LBRACE);   } // printToken("LBRACE", yytext);  
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 72 "./bumi/flexBison/expr.l"
-{ printToken("RBRACE", yytext); }
+#line 85 "expr.l"
+{ return(RBRACE);   } // printToken("RBRACE", yytext);  
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 73 "./bumi/flexBison/expr.l"
-{ printToken("LBRACK", yytext); }
+#line 86 "expr.l"
+{ return(LBRACK);   } // printToken("LBRACK", yytext);  
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 74 "./bumi/flexBison/expr.l"
-{ printToken("RBRACK", yytext); }
+#line 87 "expr.l"
+{ return(RBRACK);   } // printToken("RBRACK", yytext);  
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 76 "./bumi/flexBison/expr.l"
-{ printToken("IDK", yytext); }
+#line 89 "expr.l"
+{ printf( "Unknown: '%s'\n", yytext ); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 78 "./bumi/flexBison/expr.l"
+#line 91 "expr.l"
 ECHO;
 	YY_BREAK
-#line 1023 "lex.yy.c"
+#line 1036 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2025,26 +2038,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 78 "./bumi/flexBison/expr.l"
-
-
-int main(int argc, char** argv) {
-    if (argc > 1) {
-        FILE* f = fopen(argv[1], "r");
-        if (!f) {
-            fprintf(stderr, "Could not open %s\n", argv[1]);
-            return 1;
-        }
-        yyin = f;
-    }
-
-    printf(" line  token           keyword type\n");
-    printf("------------------------------------\n");
-
-    while (yylex() != 0) {
-        /* whatev */
-    }
-
-    return 0;
-}
+#line 91 "expr.l"
 

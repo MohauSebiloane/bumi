@@ -1,5 +1,6 @@
 %{
     #include <stdio.h>
+    #include <string.h>
     #include "expr.tab.h"
 
     #define YY_SKIP_YYWRAP
@@ -12,7 +13,7 @@
     }
 %}
 
-ID       [a-z|A-Z][a-zA-Z0-9]*
+ID       [a-zA-Z][a-zA-Z0-9]*
 INTTK    [0-9]+
 FLOATTK  ([0-9]+\.[0-9]+)|([0-9]+\.)
 STRINGTK \"([^\"\\]|\\.)*\"
@@ -25,74 +26,65 @@ MULTOP   [*/%]
 [ \t\r]+            { /* skip whitespace, but not endls yet... */ }
 "//"[^\n]*          { /* skip comments */ }
 
-"class"             { printToken("CLASSTK", yytext); }
-"void"              { printToken("VOIDTK", yytext); }
-"int"               { printToken("INTTK", yytext); }
-"float"             { printToken("FLOATTK", yytext); }
-"bool"              { printToken("BOOLTK", yytext); }
-"string"            { printToken("STRINGTK", yytext); }
+"class"             { return(CLASSTK);  } // printToken("CLASSTK", yytext);
+"void"              { return(VOIDTK);   } // printToken("VOIDTK", yytext); 
+"int"               { return(INTTK);    } // printToken("INTTK", yytext);  
+"float"             { return(FLOATTK);  } // printToken("FLOATTK", yytext);
+"bool"              { return(BOOLTK);   } // printToken("BOOLTK", yytext); 
+"string"            { return(STRINGTK); } // printToken("STRINGTK", yytext)
 
-"if"                { printToken("IFTK", yytext); }
-"else"              { printToken("ELSETK", yytext); }
-"for"               { printToken("FORTK", yytext); }
-"while"             { printToken("WHILETK", yytext); }
-"return"            { printToken("RETURNTK", yytext); }
+"if"                { return(IFTK);     } // printToken("IFTK", yytext);   
+"else"              { return(ELSETK);   } // printToken("ELSETK", yytext); 
+"for"               { return(FORTK);    } // printToken("FORTK", yytext);  
+"while"             { return(WHILETK);  } // printToken("WHILETK", yytext);
+"return"            { return(RETURNTK); } // printToken("RETURNTK", yytext)
 
-"new"               { printToken("NEWTK", yytext); }
-"this"              { printToken("THISTK", yytext); }
-"printf"            { printToken("PRINTTK", yytext); }
+"new"               { return(NEWTK);    } // printToken("NEWTK", yytext);  
+"this"              { return(THISTK);   } // printToken("THISTK", yytext); 
+"printf"            { return(PRINTTK);  } // printToken("PRINTTK", yytext);
 
-{ID}                { printToken("IDENTIFIER", yytext); }
+{ID} {
+    yylval.val = (char*) strdup(yytext);
+    return(IDENTIFIER);
+}
+{INTTK} {
+    yylval.val = (char*) strdup(yytext);
+    return(INTTK);
+}
+{FLOATTK} {
+    yylval.val = (char*) strdup(yytext);
+    return(FLOATTK);
+}
+{STRINGTK} {
+    yylval.val = (char*) strdup(yytext);
+    return(STRINGTK);
+}
 
-{INTTK}             { printToken("INTTK", yytext); }
-{FLOATTK}           { printToken("FLOATTK", yytext); }
-{STRINGTK}          { printToken("STRINGTK", yytext); }
+"=="                { return(EQOP);     } // printToken("EQOP", yytext);    
+"!="                { return(NEQOP);    } // printToken("NEQOP", yytext);   
+"<="                { return(LEOP);     } // printToken("LEOP", yytext);    
+">="                { return(GEOP);     } // printToken("GEOP", yytext);    
+"&&"                { return(ANDOP);    } // printToken("ANDOP", yytext);   
+"||"                { return(OROP);     } // printToken("OROP", yytext);    
 
-"=="                { printToken("EQOP", yytext); }
-"!="                { printToken("NEQOP", yytext); }
-"<="                { printToken("LEOP", yytext); }
-">="                { printToken("GEOP", yytext); }
-"&&"                { printToken("ANDOP", yytext); }
-"||"                { printToken("OROP", yytext); }
+"<"                 { return(LTOP);     } // printToken("LTOP", yytext);    
+">"                 { return(GTOP);     } // printToken("GTOP", yytext);    
+"="                 { return(ASSIGNOP); } // printToken("ASSIGNOP", yytext);
+"!"                 { return(NOTOP);    } // printToken("NOTOP", yytext);   
 
-"<"                 { printToken("LTOP", yytext); }
-">"                 { printToken("GTOP", yytext); }
-"="                 { printToken("ASSIGNOP", yytext); }
-"!"                 { printToken("NOTOP", yytext); }
+{ADDOP}             { return(ADDOP);    } // printToken("ADDOP", yytext);   
+{MULTOP}            { return(MULTOP);   } // printToken("MULTOP", yytext);  
 
-{ADDOP}             { printToken("ADDOP", yytext); }
-{MULTOP}            { printToken("MULTOP", yytext); }
+"."                 { return(DOT);      } // printToken("DOT", yytext);     
+","                 { return(COMMA);    } // printToken("COMMA", yytext);   
+";"                 { return(SEMICOL);  } // printToken("SEMICOL", yytext); 
+"("                 { return(LPAREN);   } // printToken("LPAREN", yytext);  
+")"                 { return(RPAREN);   } // printToken("RPAREN", yytext);  
+"{"                 { return(LBRACE);   } // printToken("LBRACE", yytext);  
+"}"                 { return(RBRACE);   } // printToken("RBRACE", yytext);  
+"["                 { return(LBRACK);   } // printToken("LBRACK", yytext);  
+"]"                 { return(RBRACK);   } // printToken("RBRACK", yytext);  
 
-"."                 { printToken("DOT", yytext); }
-","                 { printToken("COMMA", yytext); }
-";"                 { printToken("SEMICOL", yytext); }
-"("                 { printToken("LPAREN", yytext); }
-")"                 { printToken("RPAREN", yytext); }
-"{"                 { printToken("LBRACE", yytext); }
-"}"                 { printToken("RBRACE", yytext); }
-"["                 { printToken("LBRACK", yytext); }
-"]"                 { printToken("RBRACK", yytext); }
-
-.                   { printToken("IDK", yytext); }
+. { printf( "Unknown: '%s'\n", yytext ); }
 
 %%
-
-int main(int argc, char** argv) {
-    if (argc > 1) {
-        FILE* f = fopen(argv[1], "r");
-        if (!f) {
-            fprintf(stderr, "Could not open %s\n", argv[1]);
-            return 1;
-        }
-        yyin = f;
-    }
-
-    printf(" line  token           keyword type\n");
-    printf("------------------------------------\n");
-
-    while (yylex() != 0) {
-        /* whatev */
-    }
-
-    return 0;
-}
