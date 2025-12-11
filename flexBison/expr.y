@@ -32,10 +32,22 @@ int yyerror(char* s);
 %token LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK
 
 %%
+-- NEED: varDec, paramList, paramListOPtion, stmtList
 
-program : stmt_list END;
+program : decList END;
+decList : | decList declared;
+declared: class | function;
 
-stmt_list : stmt | stmt_list stmt;
+classDec: CLASSTK IDENTIFIER LBRACE classCont RBRACE optSemicol;    -- class LABEL { content };
+classCont: | classCont classMem;                                    -- content: variables and methods
+classMem: varDec | methDec;                                         -- variable declaration or method declaration
+
+methDec: typeOrVoid IDENTIFIER LPAREN paramListOption RPAREN LBRACE stmtList RBRACE;
+
+typeOrVoid: types | VOIDTK; 
+types: INTTK | FLOATTK | BOOLTK | STRINGTK | IDENTIFIER;
+
+optSemicol: | SEMICOL;
 
 %%
 
