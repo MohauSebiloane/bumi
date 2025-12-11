@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
     snprintf(translatorCommand, sizeof(translatorCommand),
              "translator.exe \"%s\"", bumiFile);
 
-    printf("Running translator: %s\n", translatorCommand);
+    // printf("Running translator: %s\n", translatorCommand);
     if (system(translatorCommand) != 0) return 1;
 
     char cFile[512];
@@ -32,14 +32,14 @@ int main(int argc, char *argv[]) {
     snprintf(compileCommand, sizeof(compileCommand),
              "gcc \"%s\" -o \"%s\"", cFile, exeFile);
 
-    printf("Compiling C file: %s\n", compileCommand);
+    // printf("Compiling C file: %s\n", compileCommand);
     if (system(compileCommand) != 0) return 1;
 
     char runCommand[512];
     snprintf(runCommand, sizeof(runCommand), "\"%s\"", exeFile);
-    printf("Running executable: %s\n", runCommand);
+    // printf("Running executable: %s\n", runCommand);
 
-    printf("================================================= \n\n");
+    // printf("================================================= \n\n");
     if (system(runCommand) != 0) return 1;
 
     return 0;
