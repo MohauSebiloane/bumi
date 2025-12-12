@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <io.h> 
 #include <fcntl.h> 
-#include <windows.h>
 
 #define MAX_LINE 1024
 #define MAX_CLASSES 16
@@ -127,7 +126,8 @@ void parse_classes_pass(char* line_raw) {
     }
 }
 
-void transform_this(char* dst, const char* src) {
+void transform_this(char* dst, const char* src, bool in_class) {
+    if (!in_class) { strcpy(dst, src); return; }
     dst[0] = '\0';
     const char* p = src;
     while (*p) {
@@ -146,7 +146,7 @@ void transform_this(char* dst, const char* src) {
     }
 }
 
-void emit_print(FILE* out, char* content) {
+void emit_print(FILE* out, char* content, bool in_class) {
     if (!content) return;
     char* t = trim(content);
     int len = strlen(t);
@@ -157,7 +157,7 @@ void emit_print(FILE* out, char* content) {
         return;
     }
     char transformed[MAX_LINE];
-    transform_this(transformed, t);
+    transform_this(transformed, t, in_class);
     fprintf(out, "    printf(\"%%d\\n\", %s);\n", transformed);
 }
 
@@ -258,43 +258,34 @@ void process_line(FILE* out, char* line_raw) {
             char* content = strchr(s, '(') + 1;
             char* end = strrchr(content, ')');
             if (end) *end = '\0';
-            emit_print(out, content);
+            emit_print(out, content, strlen(current_class) > 0); 
             return;
         }
 
 
         {
-            char vtype[MAX_TOKEN] = {0}, vname[MAX_TOKEN] = {0};
-            if (sscanf(s, "%s %s", vtype, vname) == 2) {
-                if (strchr(s, '=') || (strchr(s, ';') && !strchr(s, '('))) {
-                    for (int i = 0; vname[i]; ++i) {
-                        if (vname[i] == ';' || vname[i] == ',') { vname[i] = '\0'; break; }
-                    }
-                    char mapped[MAX_TOKEN];
-                    map_type(vtype, mapped);
-                    if (mapped[0]) {
-                        record_var(vname, mapped);
-                        char *eq = strchr(s, '=');
-                        if (eq) {
-                            char rhs[MAX_LINE];
-                            strcpy(rhs, eq + 1);
-                            char *endsemi = strrchr(rhs, ';');
-                            if (endsemi) *endsemi = '\0';
-                            trim(rhs);
-                            char rhs_t[MAX_LINE];
-                            transform_this(rhs_t, rhs);
-                            fprintf(out, "    %s %s = %s;\n", mapped, vname, rhs_t);
-                        } else {
-                            fprintf(out, "    %s %s;\n", mapped, vname);
-                        }
-                        return;
-                    }
-                }
+    char vtype[MAX_TOKEN], vname[MAX_TOKEN];
+    if (sscanf(s, "%s %s", vtype, vname) == 2 && strchr(s, '=')) {
+        // strip = and ;
+        for (int i = 0; vname[i]; i++) {
+            if (vname[i] == '=' || vname[i] == ';') {
+                vname[i] = 0;
+                break;
             }
         }
+        char mapped[MAX_TOKEN];
+        map_type(vtype, mapped);
+        record_var(vname, mapped);
+        char* rhs = strchr(s, '=');
+        if (rhs) rhs++; 
+        fprintf(out, "    %s %s = %s;\n", mapped, vname, trim(rhs));
+        return;
+    }
+}
+      
 
         char transformed[MAX_LINE];
-        transform_this(transformed, s);
+        transform_this(transformed, s, strlen(current_class) > 0);
 
 
         if (!line_ends_with_semicolon(transformed)) {
@@ -307,9 +298,6 @@ void process_line(FILE* out, char* line_raw) {
 
     if (starts_with("void main", s)) {
         fprintf(out, "int main() {\n");
-        in_method = true;
-        brace_depth = 1;
-        current_class[0] = '\0';
         return;
     }
 
@@ -321,7 +309,6 @@ void process_line(FILE* out, char* line_raw) {
         left[new_kw - s] = '\0';
         char type[MAX_TOKEN], var[MAX_TOKEN];
         if (sscanf(left, "%s %s", type, var) >= 1) {
-          
             fprintf(out, "%s* %s = %s_new();\n", type, var, type);
             if (var[0]) record_var(var, type);
             return;
