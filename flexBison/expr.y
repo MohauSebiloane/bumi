@@ -18,7 +18,7 @@ int yyerror(char* s);
 
 %}
 
-%union semrec { /*SEMANTIC RECORD */
+%union { /*SEMANTIC RECORD */
 	char *val; 
 }
 
@@ -156,6 +156,6 @@ int main(int argc, char**argv) {
     yyparse();
 
     printf("compiling...\n");
+    return 1;
     /* call compiler function :-) */
-    
 }
