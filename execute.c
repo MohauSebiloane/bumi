@@ -9,6 +9,11 @@ int main(int argc, char *argv[]) {
     }
 
     char *bumiFile = argv[1];
+    char bisonCommand[512];
+    snprintf(bisonCommand, sizeof(bisonCommand),
+             "check.exe \"%s\"", bumiFile);
+    if (system(bisonCommand) != 0) return 1;
+
     char translatorCommand[512];
     snprintf(translatorCommand, sizeof(translatorCommand),
              "translator.exe \"%s\"", bumiFile);
