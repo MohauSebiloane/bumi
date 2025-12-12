@@ -10,6 +10,5 @@ int fibonacci(int n) {
 }
 
 void main() {
-  int n = 7;
-  printf("%d", fibonacci(n));
-};
+  printf("%d", fibonacci(7));
+}

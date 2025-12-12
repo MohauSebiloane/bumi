@@ -6,7 +6,7 @@ class Person {
 
     void setAge(int newAge) {
         this.age = newAge;
-        this.name = "John Doe"
+        this.name = "John Doe";
         printf("%s's new age: %d\n", this.name, this.age);
     }
     void giveRaise(int amount) {
@@ -26,4 +26,4 @@ void main() {
     
     puts("Done");
     return 0;
-}
+};
