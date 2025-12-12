@@ -1,3 +1,9 @@
+/* BUMI Flex Lexer ------------------------------------------------------------ */
+/* Author: Colin Fairborn                                                       */
+/* Date:   12/11/2025                                                           */
+/* Citation: - CODE ADAPTED FROM EX04, authors: Dr. Pete Tucker, Colin Fairborn.*/
+/* ---------------------------------------------------------------------------- */
+
 %{
     #include <stdio.h>
     #include <string.h>
@@ -8,15 +14,11 @@
 
     int lineN = 1;
 
-    void printToken(const char* name, const char* text) {
-        printf("%4d  %-15s  %s\n", lineN, name, text); // right aligned 4 char int, left aligned 15 char string, another string
-    }
 %}
-
 ID       [a-zA-Z][a-zA-Z0-9]*
-INTTK    [0-9]+
-FLOATTK  ([0-9]+\.[0-9]+)|([0-9]+\.)
-STRINGTK \"([^\"\\]|\\.)*\"
+INTLIT    [0-9]+
+FLOATLIT  ([0-9]+\.[0-9]+)|([0-9]+\.)
+STRINGLIT \"([^\"\\]|\\.)*\"
 ADDOP    [+-]
 MULTOP   [*/%]
 
@@ -41,23 +43,26 @@ MULTOP   [*/%]
 
 "new"               { return(NEWTK);    } // printToken("NEWTK", yytext);  
 "this"              { return(THISTK);   } // printToken("THISTK", yytext); 
-"printf"            { return(PRINTTK);  } // printToken("PRINTTK", yytext);
+"printf" {
+    yylval.val = strdup(yytext);
+    return(IDENTIFIER);
+}
 
 {ID} {
     yylval.val = (char*) strdup(yytext);
     return(IDENTIFIER);
 }
-{INTTK} {
-    yylval.val = (char*) strdup(yytext);
-    return(INTTK);
+{INTLIT}    { 
+    yylval.val = strdup(yytext);
+    return(INTLIT);    
 }
-{FLOATTK} {
-    yylval.val = (char*) strdup(yytext);
-    return(FLOATTK);
+{FLOATLIT}  { 
+    yylval.val = strdup(yytext);
+    return(FLOATLIT);  
 }
-{STRINGTK} {
-    yylval.val = (char*) strdup(yytext);
-    return(STRINGTK);
+{STRINGLIT} { 
+    yylval.val = strdup(yytext);
+    return(STRINGLIT); 
 }
 
 "=="                { return(EQOP);     } // printToken("EQOP", yytext);    
@@ -71,6 +76,8 @@ MULTOP   [*/%]
 ">"                 { return(GTOP);     } // printToken("GTOP", yytext);    
 "="                 { return(ASSIGNOP); } // printToken("ASSIGNOP", yytext);
 "!"                 { return(NOTOP);    } // printToken("NOTOP", yytext);   
+"++"                { return(INC);      } // printToken("DOT", yytext);     
+"--"                { return(DEC);      } // printToken("DOT", yytext);   
 
 {ADDOP}             { return(ADDOP);    } // printToken("ADDOP", yytext);   
 {MULTOP}            { return(MULTOP);   } // printToken("MULTOP", yytext);  
