@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,13 +56,13 @@ bool starts_with(const char* pre, const char* s) {
     return strncmp(pre, s, n) == 0;
 }
 
-void map_type(const char* bumi_type, char* out) {
-    if (strcmp(bumi_type, "int") == 0) strcpy(out, "int");
-    else if (strcmp(bumi_type, "double") == 0) strcpy(out, "double");
-    else if (strcmp(bumi_type, "bool") == 0) strcpy(out, "int");
-    else if (strcmp(bumi_type, "String") == 0) strcpy(out, "char*");
-    else if (strcmp(bumi_type, "void") == 0) strcpy(out, "void");
-    else strcpy(out, bumi_type);
+void map_type(const char* dart_type, char* out) {
+    if (strcmp(dart_type, "int") == 0) strcpy(out, "int");
+    else if (strcmp(dart_type, "double") == 0) strcpy(out, "double");
+    else if (strcmp(dart_type, "bool") == 0) strcpy(out, "int");
+    else if (strcmp(dart_type, "String") == 0) strcpy(out, "char*");
+    else if (strcmp(dart_type, "void") == 0) strcpy(out, "void");
+    else strcpy(out, dart_type);
 }
 
 void record_var(const char* name, const char* type) {
@@ -126,8 +127,7 @@ void parse_classes_pass(char* line_raw) {
     }
 }
 
-void transform_this(char* dst, const char* src, bool in_class) {
-    if (!in_class) { strcpy(dst, src); return; }
+void transform_this(char* dst, const char* src) {
     dst[0] = '\0';
     const char* p = src;
     while (*p) {
@@ -146,7 +146,7 @@ void transform_this(char* dst, const char* src, bool in_class) {
     }
 }
 
-void emit_print(FILE* out, char* content, bool in_class) {
+void emit_print(FILE* out, char* content) {
     if (!content) return;
     char* t = trim(content);
     int len = strlen(t);
@@ -157,7 +157,7 @@ void emit_print(FILE* out, char* content, bool in_class) {
         return;
     }
     char transformed[MAX_LINE];
-    transform_this(transformed, t, in_class);
+    transform_this(transformed, t);
     fprintf(out, "    printf(\"%%d\\n\", %s);\n", transformed);
 }
 
@@ -258,35 +258,12 @@ void process_line(FILE* out, char* line_raw) {
             char* content = strchr(s, '(') + 1;
             char* end = strrchr(content, ')');
             if (end) *end = '\0';
-            emit_print(out, content, strlen(current_class) > 0); 
+            emit_print(out, content);
             return;
         }
 
-
-        {
-    char vtype[MAX_TOKEN], vname[MAX_TOKEN];
-    if (sscanf(s, "%s %s", vtype, vname) == 2 && strchr(s, '=')) {
-        // strip = and ;
-        for (int i = 0; vname[i]; i++) {
-            if (vname[i] == '=' || vname[i] == ';') {
-                vname[i] = 0;
-                break;
-            }
-        }
-        char mapped[MAX_TOKEN];
-        map_type(vtype, mapped);
-        record_var(vname, mapped);
-        char* rhs = strchr(s, '=');
-        if (rhs) rhs++; 
-        fprintf(out, "    %s %s = %s;\n", mapped, vname, trim(rhs));
-        return;
-    }
-}
-      
-
         char transformed[MAX_LINE];
-        transform_this(transformed, s, strlen(current_class) > 0);
-
+        transform_this(transformed, s);
 
         if (!line_ends_with_semicolon(transformed)) {
             fprintf(out, "    %s;\n", transformed);
@@ -309,6 +286,7 @@ void process_line(FILE* out, char* line_raw) {
         left[new_kw - s] = '\0';
         char type[MAX_TOKEN], var[MAX_TOKEN];
         if (sscanf(left, "%s %s", type, var) >= 1) {
+            // FIX: Always use pointer
             fprintf(out, "%s* %s = %s_new();\n", type, var, type);
             if (var[0]) record_var(var, type);
             return;
@@ -464,6 +442,37 @@ char* strip_bumi_extension(const char *filename) {
 
 
 
+
+
+// void remove_last_char(const char* filename) {
+//     FILE* f = fopen(filename, "rb+"); // binary mode to avoid CRLF issues
+//     if (!f) return;
+
+//     // Go to end
+//     if (fseek(f, -1, SEEK_END) != 0) { // move 1 byte before end
+//         fclose(f);
+//         return;
+//     }
+
+//     int last = fgetc(f); // read last byte
+//     if (last == EOF) {
+//         fclose(f);
+//         return;
+//     }
+
+//     long new_size = ftell(f); // current position is new size
+//     if (_chsize_s(_fileno(f), new_size) != 0) {
+//         perror("Failed to truncate file");
+//     }
+
+//     fclose(f);
+// }
+
+
+
+
+
+
 int main(int argc, char *argv[]) {
 
     char* bumi_source = load_raw_file(argv[1]);
@@ -522,6 +531,8 @@ int main(int argc, char *argv[]) {
         process_line(out, tmp);
         line = strtok(NULL, "\n");
     }
+
+
 
     free(src_copy);
     fclose(out);

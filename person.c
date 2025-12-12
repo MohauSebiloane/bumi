@@ -20,12 +20,12 @@ Person* Person_new() {
 }
 
 void Person_setAge(Person* self, int newAge) {
-    this.age  = newAge;;
+    self->age = newAge;
 }
 
 void Person_giveRaise(Person* self, int amount) {
-    char* man = "man";;
-    this.salary  = this.salary + amount;;
+    String man = "man";
+    self->salary = self->salary + amount;
     puts(man);
     printf("%d\n", self->salary);
 }
@@ -33,14 +33,15 @@ void Person_giveRaise(Person* self, int amount) {
     
 int main() {
     String out = "Lets Go";
-    print(out);
-Person* p = Person_new();
-    p->age =  30;
-    p->salary =  50000;
-    Person_setAge(p, 31);
-    for (int i = 0; i < 3; i++){
-    Person_giveRaise(p, 50000);
-    }
+    printf("%d\n", out);
+    Person p = new Person();
+    p.age = 30;
+    p.salary = 50000;
+    p.setAge(31);
+    for (int i = 0; i < 3; i++){;
+    p.giveRaise(50000);
+}
+
     
     puts("Done");
     return 0;
