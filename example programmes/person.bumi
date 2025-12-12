@@ -1,8 +1,13 @@
 class Person {
     int age;
     int salary;
+    String name;
+
+
     void setAge(int newAge) {
         this.age = newAge;
+        this.name = "John Doe"
+        printf("%s's new age: %d\n", this.name, this.age);
     }
     void giveRaise(int amount) {
         this.salary = this.salary + amount;
@@ -11,8 +16,6 @@ class Person {
 }
         
 void main() {
-    String out = "Lets Go";
-    puts(out);
     Person p = new Person();
     p.age = 30;
     p.salary = 50000;

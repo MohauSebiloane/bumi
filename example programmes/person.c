@@ -21,12 +21,12 @@ Person* Person_new() {
 
 void Person_setAge(Person* self, int newAge) {
     self->age = newAge;
+    self->name = "John Doe";
+    printf("%s's new age: %d\n", self->name, self->age);
 }
 
 void Person_giveRaise(Person* self, int amount) {
-    char* man = "man";
     self->salary = self->salary + amount;
-    printf(man);
     printf("%d\n", self->salary);
 }
 
@@ -42,4 +42,4 @@ Person* p = Person_new();
     
     puts("Done");
     return 0;
-    };
+    }
