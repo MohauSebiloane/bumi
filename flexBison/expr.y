@@ -45,8 +45,8 @@ classDec: CLASSTK IDENTIFIER LBRACE classCont RBRACE optSemicol;    /* class LAB
 classCont: /* empty */ | classCont classMem;                        /* content: variables and methods */
 classMem: varDec | methDec;                                         /* variable declaration or method declaration */
 
-methDec: typeOrVoid IDENTIFIER LPAREN paramListOption RPAREN LBRACE stmtList RBRACE;
-funcDec: typeOrVoid IDENTIFIER LPAREN paramListOption RPAREN LBRACE stmtList RBRACE;
+methDec: typeOrVoid IDENTIFIER LPAREN paramListOption RPAREN LBRACE stmtList RBRACE optSemicol;
+funcDec: typeOrVoid IDENTIFIER LPAREN paramListOption RPAREN LBRACE stmtList RBRACE optSemicol;
 
 typeOrVoid: types | VOIDTK; 
 types: INTTK | FLOATTK | BOOLTK | STRINGTK | IDENTIFIER;
@@ -65,10 +65,8 @@ block: LBRACE stmtList RBRACE;
 exprStmt: expression SEMICOL;
 returnStmt: RETURNTK SEMICOL | RETURNTK expression SEMICOL;
 
-ifStmt: 
-    IFTK LPAREN expression RPAREN statement 
-    | IFTK LPAREN expression RPAREN statement ELSETK statement
-;
+ifStmt: IFTK LPAREN expression RPAREN statement elsePart;
+elsePart: /* empty */ | ELSETK statement;
 
 whileStmt: WHILETK LPAREN expression RPAREN statement;
 
