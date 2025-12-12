@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,7 +6,6 @@
 #include <stdbool.h>
 #include <io.h> 
 #include <fcntl.h> 
-#include <windows.h>
 
 #define MAX_LINE 1024
 #define MAX_CLASSES 16
@@ -531,6 +531,8 @@ int main(int argc, char *argv[]) {
         process_line(out, tmp);
         line = strtok(NULL, "\n");
     }
+
+
 
     free(src_copy);
     fclose(out);
