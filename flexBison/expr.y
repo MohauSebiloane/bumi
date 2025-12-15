@@ -7,51 +7,52 @@
 ////////////////////////////////////////////
 
 %{
-#include <stdio.h>
+#include <stdio.h>  // printf() capabilities
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> // String helpers
 
 #define YYDEBUG 1
 
-int yylex (void);
+int yylex (void);       // Lexer from flex
 int yyerror(char* s);
 
 %}
 
-%union { /*SEMANTIC RECORD */
-	char *val; 
+%union {        /*SEMANTIC RECORD */
+	char *val;  /* store ids and literals as strings */
 }
 
 %start program
 
 %token <val> IDENTIFIER INTLIT FLOATLIT STRINGLIT       /* almost landed in trouble with bad token names! */
-%token CLASSTK VOIDTK INTTK FLOATTK BOOLTK STRINGTK
-%token IFTK ELSETK FORTK WHILETK RETURNTK
-%token NEWTK THISTK
-%token EQOP NEQOP LEOP GEOP ANDOP OROP
-%token LTOP GTOP NOTOP
-%token INC DEC
-%token ADDOP MULTOP ASSIGNOP
-%token DOT COMMA SEMICOL
-%token LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK
+%token CLASSTK VOIDTK INTTK FLOATTK BOOLTK STRINGTK     /* keywords */
+%token IFTK ELSETK FORTK WHILETK RETURNTK               /*    ..    */
+%token NEWTK THISTK                                     /*    ..    */
+%token EQOP NEQOP LEOP GEOP ANDOP OROP                  /* == != <= >= && || */
+%token LTOP GTOP NOTOP                                  /* < > ! * */
+%token INC DEC                                          /* ++ -- */
+%token ADDOP MULTOP ASSIGNOP                            /* + - * ? % =*/
+%token DOT COMMA SEMICOL                                /* punctuation */
+%token LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK        /*     ..      */
 
 %%
 
 program : decList;
-decList : /* empty */ | decList declared;
+decList : /* empty */ | decList declared;   /* allow empty programs | any number of declarations */
 declared: classDec | funcDec;
 
 classDec: CLASSTK IDENTIFIER LBRACE classCont RBRACE optSemicol;    /* class LABEL { content }; */
 classCont: /* empty */ | classCont classMem;                        /* content: variables and methods */
 classMem: varDec | methDec;                                         /* variable declaration or method declaration */
 
+/* returnType name(params) {statements}; */
 methDec: typeOrVoid IDENTIFIER LPAREN paramListOption RPAREN LBRACE stmtList RBRACE optSemicol;
 funcDec: typeOrVoid IDENTIFIER LPAREN paramListOption RPAREN LBRACE stmtList RBRACE optSemicol;
 
 typeOrVoid: types | VOIDTK; 
-types: INTTK | FLOATTK | BOOLTK | STRINGTK | IDENTIFIER;
+types: INTTK | FLOATTK | BOOLTK | STRINGTK | IDENTIFIER;            /* primitive types */
 
-optSemicol: /* empty */ | SEMICOL;
+optSemicol: /* empty */ | SEMICOL; /* optional semicolon. used by class/method/function */
 
 paramListOption: /* empty */ | paramList;
 paramList: param | paramList COMMA param;
@@ -61,7 +62,7 @@ varDec: types IDENTIFIER SEMICOL | types IDENTIFIER ASSIGNOP expression SEMICOL;
 stmtList: /* empty */ | stmtList statement;
 statement: varDec | exprStmt | ifStmt | whileStmt | forStmt | returnStmt | block;
 
-block: LBRACE stmtList RBRACE;
+block: LBRACE stmtList RBRACE; /* nested scope block */
 exprStmt: expression SEMICOL;
 returnStmt: RETURNTK SEMICOL | RETURNTK expression SEMICOL;
 
@@ -83,12 +84,12 @@ assignmentExpr: logicalOrExpr | lvalue ASSIGNOP assignmentExpr;
 /* things that can appear on the left of = */
 lvalue: IDENTIFIER | accessExpr DOT IDENTIFIER;
 
-/* EQOP ANDOP OROP */
+/* EQOP ANDOP OROP (equality): all left-associative */
 logicalOrExpr: logicalAndExpr | logicalOrExpr OROP logicalAndExpr;  /* next checks for && */
 logicalAndExpr: equalityExpr | logicalAndExpr ANDOP equalityExpr;   /* next == */
 equalityExpr: relationExpr | equalityExpr EQOP relationExpr | equalityExpr NEQOP relationExpr;  /* next is <, >, <=, ... */
 
-/* LEOP GEOP LTOP GTOP */
+/* LEOP GEOP LTOP GTOP (relational): left-associative */
 relationExpr: 
     addOper
     | relationExpr LEOP addOper
@@ -97,8 +98,8 @@ relationExpr:
     | relationExpr GTOP addOper
 ;
 
-addOper: mulOper | addOper ADDOP mulOper;
-mulOper: unaryExpr | mulOper MULTOP unaryExpr;
+addOper: mulOper | addOper ADDOP mulOper;       /* ADDOP (additive): left-assoc */
+mulOper: unaryExpr | mulOper MULTOP unaryExpr;  /* MULTOP (*, /, %): left-assoc */
 
 unaryExpr:
     postfixExpr
@@ -114,6 +115,12 @@ postfixExpr:
 ;
 //// end citation /////
 
+/* access/call:
+    plain
+    dotted access (obj.field)
+    dotted call (obj.method(args))
+    direct call ((f)(args) or f(args) or obj(args))
+*/
 accessExpr:
     plain
     | accessExpr DOT IDENTIFIER

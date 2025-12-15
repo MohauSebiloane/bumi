@@ -5,9 +5,9 @@
 /* ---------------------------------------------------------------------------- */
 
 %{
-    #include <stdio.h>
-    #include <string.h>
-    #include "expr.tab.h"
+    #include <stdio.h>      // printf() capabilities
+    #include <string.h>     // for copying strings into yylval
+    #include "expr.tab.h"   // token defs and yylval type from Bison
 
     #define YY_SKIP_YYWRAP
     int yywrap(void) { return 1; }
@@ -15,6 +15,8 @@
     int lineN = 1;
 
 %}
+
+/* Regex macro defininitions */
 ID       [a-zA-Z][a-zA-Z0-9]*
 INTLIT    [0-9]+
 FLOATLIT  ([0-9]+\.[0-9]+)|([0-9]+\.)
@@ -23,8 +25,7 @@ ADDOP    [+-]
 MULTOP   [*/%]
 
 %%
-
-\n                  { lineN++; }
+\n                  { lineN++; } /* count newlines */
 [ \t\r]+            { /* skip whitespace, but not endls yet... */ }
 "//"[^\n]*          { /* skip comments */ }
 
@@ -44,8 +45,8 @@ MULTOP   [*/%]
 "new"               { return(NEWTK);    } // printToken("NEWTK", yytext);  
 "this"              { return(THISTK);   } // printToken("THISTK", yytext); 
 "printf" {
-    yylval.val = strdup(yytext);
-    return(IDENTIFIER);
+    yylval.val = strdup(yytext);    // store text
+    return(IDENTIFIER);             // return token type to parser
 }
 
 {ID} {
@@ -92,6 +93,6 @@ MULTOP   [*/%]
 "["                 { return(LBRACK);   } // printToken("LBRACK", yytext);  
 "]"                 { return(RBRACK);   } // printToken("RBRACK", yytext);  
 
-. { printf( "Unknown: '%s'\n", yytext ); }
+. { printf( "Unknown: '%s'\n", yytext ); } // Print unknown
 
 %%
